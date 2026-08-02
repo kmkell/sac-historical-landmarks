@@ -93,6 +93,11 @@ if (($handle = fopen($csvFile, 'r')) !== false) {
     $pdo->exec($productionSql);
     
     echo "Done!<br><br>";
+	// --- NEW AUDIT LOG STEP ---
+    // Log the successful run milestone to the history ledger
+    $logSql = "INSERT INTO etl_log (records_staged, status) VALUES (:count, 'SUCCESS')";
+    $pdo->prepare($logSql)->execute([':count' => $importCount]);
+    // --------------------------
     echo "<h3>ETL Pipeline Complete! Database is fully normalized and populated.</h3>";
 
 } else {
