@@ -48,4 +48,30 @@ class LandmarkService {
         $stmt = $this->pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+	
+/**
+     * Searches landmarks by matching keywords in resource_name or street_address.
+     *
+     * @param string $keyword The search term entered by the user
+     * @return array Matching associative rows
+     */
+    public function search($keyword) {
+        $sql = "SELECT objectid, apn, resource_name, street_address, ordinance, shape__area, shape__length 
+                FROM city_landmarks 
+                WHERE resource_name LIKE :q1 
+                   OR street_address LIKE :q2 
+                ORDER BY objectid ASC";
+        
+        $searchTerm = '%' . $keyword . '%';
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':q1' => $searchTerm,
+            ':q2' => $searchTerm
+        ]);
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+	
+	
 }

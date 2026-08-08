@@ -1,13 +1,39 @@
 <?php
-// Include the bootstrap header to initialize the data layer and HTML head
+// Include the bootstrap header
 require_once 'header.php';
 
-// Use the pre-instantiated service concierge to fetch all 904 records
-$landmarks = $landmarkService->getAll();
+// Check if a search term was submitted via URL query string
+$searchTerm = isset($_GET['q']) ? trim($_GET['q']) : '';
+
+// Execute either search query or fetch all
+if ($searchTerm !== '') {
+    $landmarks = $landmarkService->search($searchTerm);
+} else {
+    $landmarks = $landmarkService->getAll();
+}
 ?>
 
 <h2>Master Registry Catalog</h2>
-<p>Displaying all historic properties currently logged in the system ledger.</p>
+
+<form action="index.php" method="GET" style="margin-bottom: 20px;">
+    <input 
+        type="text" 
+        name="q" 
+        placeholder="Search by address or property name..." 
+        value="<?php echo htmlspecialchars($searchTerm); ?>" 
+        style="padding: 8px 12px; width: 300px; border: 1px solid #ccc; border-radius: 4px;"
+    >
+    <button type="submit" style="padding: 8px 16px; background-color: #2c3e50; color: #fff; border: none; border-radius: 4px; cursor: pointer;">
+        Search
+    </button>
+    <?php if ($searchTerm !== ''): ?>
+        <a href="index.php" style="margin-left: 10px; color: #e74c3c; text-decoration: none;">Clear Search</a>
+    <?php endif; ?>
+</form>
+
+<?php if ($searchTerm !== ''): ?>
+    <p>Showing results for: <strong><?php echo htmlspecialchars($searchTerm); ?></strong> (<?php echo count($landmarks); ?> found)</p>
+<?php endif; ?>
 
 <table class="data-table">
     <thead>
