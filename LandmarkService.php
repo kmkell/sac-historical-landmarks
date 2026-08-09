@@ -72,6 +72,57 @@ class LandmarkService {
         
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-	
-	
+	/**
+     * Retrieves the total count of landmark records (supports search filtering).
+     *
+     * @param string $keyword Optional search term
+     * @return int Total number of matching rows
+     */
+    public function getTotalCount($keyword = '') {
+        if ($keyword !== '') {
+            $sql = "SELECT COUNT(*) FROM city_landmarks 
+                    WHERE resource_name LIKE :q1 OR street_address LIKE :q2";
+            $stmt = $this->pdo->prepare($sql);
+            $searchTerm = '%' . $keyword . '%';
+            $stmt->execute([':q1' => $searchTerm, ':q2' => $searchTerm]);
+        } else {
+            $sql = "SELECT COUNT(*) FROM city_landmarks";
+            $stmt = $this->pdo->query($sql);
+        }
+        return (int)$stmt->fetchColumn();
+    }
+
+    /**
+     * Fetches a paginated subset of landmarks.
+     *
+     * @param int $limit Number of records per page
+     * @param int $offset Starting row index
+     * @param string $keyword Optional search term
+     * @return array Paginated rows
+     */
+    public function getPaginated($limit = 25, $offset = 0, $keyword = '') {
+        $limit = (int)$limit;
+        $offset = (int)$offset;
+
+        if ($keyword !== '') {
+            $sql = "SELECT objectid, apn, resource_name, street_address, ordinance, shape__area, shape__length 
+                    FROM city_landmarks 
+                    WHERE resource_name LIKE :q1 OR street_address LIKE :q2 
+                    ORDER BY objectid ASC 
+                    LIMIT $limit OFFSET $offset";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $searchTerm = '%' . $keyword . '%';
+            $stmt->execute([':q1' => $searchTerm, ':q2' => $searchTerm]);
+        } else {
+            $sql = "SELECT objectid, apn, resource_name, street_address, ordinance, shape__area, shape__length 
+                    FROM city_landmarks 
+                    ORDER BY objectid ASC 
+                    LIMIT $limit OFFSET $offset";
+            $stmt = $this->pdo->query($sql);
+        }
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
 }

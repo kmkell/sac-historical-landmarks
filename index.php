@@ -1,16 +1,28 @@
 <?php
-// Include the bootstrap header
+// Centralized bootstrap initialization
 require_once 'header.php';
 
-// Check if a search term was submitted via URL query string
+// 1. Process search query parameter
 $searchTerm = isset($_GET['q']) ? trim($_GET['q']) : '';
 
-// Execute either search query or fetch all
-if ($searchTerm !== '') {
-    $landmarks = $landmarkService->search($searchTerm);
-} else {
-    $landmarks = $landmarkService->getAll();
+// 2. Pagination Configuration
+$recordsPerPage = 25;
+$currentPage = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+
+// 3. Fetch total record count and calculate total pages
+$totalRecords = $landmarkService->getTotalCount($searchTerm);
+$totalPages = ceil($totalRecords / $recordsPerPage);
+
+// Re-bound current page if out of range
+if ($currentPage > $totalPages && $totalPages > 0) {
+    $currentPage = $totalPages;
 }
+
+// Calculate SQL OFFSET
+$offset = ($currentPage - 1) * $recordsPerPage;
+
+// 4. Fetch paginated dataset
+$landmarks = $landmarkService->getPaginated($recordsPerPage, $offset, $searchTerm);
 ?>
 
 <h2>Master Registry Catalog</h2>
@@ -31,9 +43,13 @@ if ($searchTerm !== '') {
     <?php endif; ?>
 </form>
 
-<?php if ($searchTerm !== ''): ?>
-    <p>Showing results for: <strong><?php echo htmlspecialchars($searchTerm); ?></strong> (<?php echo count($landmarks); ?> found)</p>
-<?php endif; ?>
+<p>
+    Showing <?php echo count($landmarks); ?> of <?php echo $totalRecords; ?> properties
+    <?php if ($searchTerm !== ''): ?>
+        matching "<strong><?php echo htmlspecialchars($searchTerm); ?></strong>"
+    <?php endif; ?>
+    (Page <?php echo $currentPage; ?> of <?php echo max(1, $totalPages); ?>)
+</p>
 
 <table class="data-table">
     <thead>
@@ -57,7 +73,7 @@ if ($searchTerm !== '') {
                         <?php if ($row['apn'] === 'UNKNOWN'): ?>
                             <span class="badge">UNKNOWN</span>
                         <?php else: ?>
-                            <?php echo htmlspecialchars($row['apn']); ?>                     
+                            <?php echo htmlspecialchars($row['apn']); ?>
                         <?php endif; ?>
                     </td>
                 </tr>
@@ -69,6 +85,30 @@ if ($searchTerm !== '') {
         <?php endif; ?>
     </tbody>
 </table>
+
+<?php if ($totalPages > 1): ?>
+    <div class="pagination">
+        <?php if ($currentPage > 1): ?>
+            <a href="index.php?page=<?php echo ($currentPage - 1); ?>&q=<?php echo urlencode($searchTerm); ?>">&laquo; Previous</a>
+        <?php else: ?>
+            <span class="disabled">&laquo; Previous</span>
+        <?php endif; ?>
+
+        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+            <?php if ($i == $currentPage): ?>
+                <span class="active"><?php echo $i; ?></span>
+            <?php else: ?>
+                <a href="index.php?page=<?php echo $i; ?>&q=<?php echo urlencode($searchTerm); ?>"><?php echo $i; ?></a>
+            <?php endif; ?>
+        <?php endfor; ?>
+
+        <?php if ($currentPage < $totalPages): ?>
+            <a href="index.php?page=<?php echo ($currentPage + 1); ?>&q=<?php echo urlencode($searchTerm); ?>">Next &raquo;</a>
+        <?php else: ?>
+            <span class="disabled">Next &raquo;</span>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>
 
 </body>
 </html>
