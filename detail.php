@@ -1,14 +1,17 @@
 <?php
-// Centralized bootstrap initialization
 require_once 'header.php';
 
-// 1. Validate ID parameter from URL
+// Validate ID parameter from URL as an integer
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-// 2. Fetch specific record through service layer
 $landmark = null;
+$styles = [];
+
 if ($id > 0) {
     $landmark = $landmarkService->getById($id);
+    if ($landmark) {
+        $styles = $landmarkService->getStylesForLandmark($id);
+    }
 }
 ?>
 

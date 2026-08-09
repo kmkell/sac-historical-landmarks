@@ -67,9 +67,9 @@ $landmarks = $landmarkService->getPaginated($recordsPerPage, $offset, $searchTer
                <tr>
                     <td><?php echo htmlspecialchars($row['objectid']); ?></td>
                     <td>
-                        <a href="detail.php?id=<?php echo urlencode($row['objectid']); ?>" style="color: #2c3e50; font-weight: bold; text-decoration: none;">
-                            <?php echo htmlspecialchars($row['resource_name']); ?>
-                        </a>
+                        <a href="detail.php?id=<?php echo urlencode($row['id']); ?>" class="landmark-link">
+    <?php echo htmlspecialchars($row['resource_name']); ?>
+</a>
                     </td>
                     <td><?php echo htmlspecialchars($row['street_address']); ?></td>
                     <td><?php echo htmlspecialchars($row['ordinance']); ?></td>

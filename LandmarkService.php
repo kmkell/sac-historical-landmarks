@@ -24,14 +24,12 @@ class LandmarkService {
      * @param int $id The objectid value
      * @return array|false Returns associative record array, or false if not found
      */
-    public function getById($id) {
-        $sql = "SELECT objectid, apn, resource_name, street_address, ordinance, shape__area, shape__length 
+public function getById($id) {
+        $sql = "SELECT id, objectid, apn, resource_name, street_address, ordinance, shape__area, shape__length 
                 FROM city_landmarks 
-                WHERE objectid = :id";
-        
+                WHERE id = :id";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':id' => (int)$id]);
-        
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
@@ -41,7 +39,7 @@ class LandmarkService {
      * @return array Matrix array of associative rows
      */
     public function getAll() {
-        $sql = "SELECT objectid, apn, resource_name, street_address, ordinance, shape__area, shape__length 
+        $sql = "SELECT id, objectid, apn, resource_name, street_address, ordinance, shape__area, shape__length 
                 FROM city_landmarks 
                 ORDER BY objectid ASC";
         
@@ -56,7 +54,7 @@ class LandmarkService {
      * @return array Matching associative rows
      */
     public function search($keyword) {
-        $sql = "SELECT objectid, apn, resource_name, street_address, ordinance, shape__area, shape__length 
+        $sql = "SELECT id, objectid, apn, resource_name, street_address, ordinance, shape__area, shape__length 
                 FROM city_landmarks 
                 WHERE resource_name LIKE :q1 
                    OR street_address LIKE :q2 
@@ -105,7 +103,7 @@ class LandmarkService {
         $offset = (int)$offset;
 
         if ($keyword !== '') {
-            $sql = "SELECT objectid, apn, resource_name, street_address, ordinance, shape__area, shape__length 
+            $sql = "SELECT id, objectid, apn, resource_name, street_address, ordinance, shape__area, shape__length 
                     FROM city_landmarks 
                     WHERE resource_name LIKE :q1 OR street_address LIKE :q2 
                     ORDER BY objectid ASC 
@@ -115,13 +113,31 @@ class LandmarkService {
             $searchTerm = '%' . $keyword . '%';
             $stmt->execute([':q1' => $searchTerm, ':q2' => $searchTerm]);
         } else {
-            $sql = "SELECT objectid, apn, resource_name, street_address, ordinance, shape__area, shape__length 
+            $sql = "SELECT id, objectid, apn, resource_name, street_address, ordinance, shape__area, shape__length 
                     FROM city_landmarks 
                     ORDER BY objectid ASC 
                     LIMIT $limit OFFSET $offset";
             $stmt = $this->pdo->query($sql);
         }
 
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+	/**
+     * Fetches all architectural styles associated with a specific landmark primary key (id).
+     *
+     * @param int $landmarkId
+     * @return array List of styles with type and notes
+     */
+    public function getStylesForLandmark($landmarkId) {
+        $sql = "SELECT s.style_name, s.era, s.approx_start_year, s.approx_end_year, ls.style_type, ls.notes
+                FROM landmark_styles ls
+                JOIN architectural_styles s ON ls.style_id = s.style_id
+                JOIN city_landmarks l ON ls.landmark_id = l.id
+                WHERE l.id = :id
+                ORDER BY FIELD(ls.style_type, 'primary', 'transitional', 'secondary', 'remodel')";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':id' => (int)$landmarkId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
