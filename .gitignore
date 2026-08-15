@@ -1,0 +1,19 @@
+# 1. Database backups (bulky local snapshots)
+database/backups/
+
+# 2. Local environment or WAMP configuration files (if any)
+.env
+local-config.php
+
+# 3. IDE or Editor specific files (like VS Code settings)
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 4. Operating system metadata files
+.DS_Store
+Thumbs.db
+
+# Miscellaneous notes
+ProjectNotes.txt
