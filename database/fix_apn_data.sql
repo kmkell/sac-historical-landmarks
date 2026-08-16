@@ -1,0 +1,9 @@
+UPDATE city_landmarks 
+SET apn = CASE 
+    WHEN objectid = 247 THEN '22506220080000'
+    WHEN objectid = 45 THEN '27400500150000'
+    WHEN objectid = 2465 THEN '27501020170000'
+    WHEN objectid = 3098 THEN '27501020200000'
+    WHEN objectid = 3099 THEN '27501020180000'
+END
+WHERE objectid IN (247, 45, 2465, 3098, 3099);
