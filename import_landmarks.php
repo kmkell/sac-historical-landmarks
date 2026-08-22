@@ -2,6 +2,23 @@
 // Pull in the secure database connection bridge
 require_once 'dbconnect.php';
 
+echo "<h2>Starting Automated ETL Pipeline...</h2>";
+echo "Running Python Excel-to-CSV converter...<br>";
+
+// Use your direct user Python path
+$pythonPath = 'C:\\Users\\kelly\\AppData\\Local\\Python\\bin\\python.exe';
+
+$output = [];
+$returnCode = 0;
+exec("$pythonPath convert_excel.py 2>&1", $output, $returnCode);
+
+// Check if Python encountered an error
+if ($returnCode !== 0) {
+    echo "<pre>Python Error Output:\n" . implode("\n", $output) . "</pre>";
+    die("Error: Failed to convert the Excel file. Make sure Python and pandas are installed.");
+}
+echo "Conversion successful!<br><br>";
+
 $csvFile = 'sac_landmarks_raw.csv';
 
 if (!file_exists($csvFile)) {
@@ -74,12 +91,16 @@ if (($handle = fopen($csvFile, 'r')) !== false) {
     // 3. TRANSFORM & LOAD (PRODUCTION): Execute your advanced SQL script logic
     echo "Running data normalization and pushing to production tables... ";
     
-    $productionSql = "INSERT INTO city_landmarks (
+$productionSql = "INSERT INTO city_landmarks (
         objectid, apn, resource_name, street_address, ordinance, shape__area, shape__length
     )
     SELECT 
         objectid, 
-        CASE WHEN apn IS NULL OR TRIM(apn) = '' THEN 'UNKNOWN' ELSE TRIM(apn) END,
+        CASE 
+            WHEN apn REGEXP '^[0-9]{14}$' THEN CONCAT(SUBSTRING(apn, 1, 3), '-', SUBSTRING(apn, 4, 4), '-', SUBSTRING(apn, 8, 3))
+            WHEN apn IS NULL OR TRIM(apn) = '' THEN 'UNKNOWN' 
+            ELSE TRIM(apn) 
+        END,
         CASE 
             WHEN resource_name IS NULL OR TRIM(resource_name) = '' 
             THEN CONCAT('Historic Property at ', CONCAT_WS(' ', TRIM(house), TRIM(street_name), TRIM(street_type)))
