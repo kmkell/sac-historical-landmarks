@@ -26,11 +26,20 @@ To cross-reference and enrich the master dataset with historical context:
 1. **Historical Register Text Parser (`parse_historic_register.py`):** 
    * Ingests raw text/PDF dumps from the official Sacramento Register of Historical and Cultural Resources.
    * Cleans text encoding issues (`cp1252` mojibake) and runs a multi-format date parsing fallback engine (`datetime.strptime`).
-   * Uses named regular expression capture groups to extract clean structural fields (construction dates, ordinance numbers, historical names) and filters duplicates using composite unique key tuples.
+   * Uses named regular expression capture groups to extract clean structural fields (construction dates, ordinance numbers, historical 
+   names) and filters duplicates using composite unique key tuples.
+
+## 🖥️ Front-End Application & User Experience
+Beyond the backend ETL pipeline, the application features a clean, responsive web interface built for both local history hobbyists and data explorers:
+
+* **Search & Listing Interface (`index.php`):** Provides a searchable, user-friendly view of all city landmarks, allowing visitors to instantly filter by address, name, or attributes.
+* **Comprehensive Detail View (`detail.php`):** Pulls together core municipal data, historical enrichment data, and custom research notes into a single unified profile page.
+* **Research & Curation Workflow (`edit_research.php`, `update_research.php`):** Admin-facing data management tools designed to capture ongoing historical research and notes (secured for production deployment).
 
 ## ⚙️ Tech Stack
-* **Language/Automation:** Python (Pandas, Openpyxl), PHP (PDO)
-* **Database:** MySQL
+* **Back-End & Automation:** PHP (PDO, Server-Side Rendering), Python (Pandas, Openpyxl)
+* **Front-End:** HTML5, CSS3 (Custom Responsive Styling via `styles.css`), Modern PHP Templating
+* **Database & Architecture:** MySQL, Relational Database Normalization, Staging-to-Production ETL Architecture
 * **Version Control:** Git & GitHub
 
 ## 📂 Project Structure
