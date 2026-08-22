@@ -15,5 +15,9 @@ local-config.php
 .DS_Store
 Thumbs.db
 
+# 5. Raw and generated ETL data files
+historic_landmarks_raw.xlsx
+sac_landmarks_raw.csv
+
 # Miscellaneous notes
 ProjectNotes.txt
